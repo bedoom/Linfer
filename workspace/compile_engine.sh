@@ -64,84 +64,84 @@
 # 		--int8
 
 
-echo ""
-echo ""
-echo "************************ compile yolov8 models ***************************"
-echo ""
-trtexec --onnx=./onnx_models/yolov8n.onnx \
-		--saveEngine=./yolov8n.trt \
-		--buildOnly \
-		--minShapes=images:1x3x640x640 \
-		--optShapes=images:1x3x640x640 \
-		--maxShapes=images:8x3x640x640 \
-		--fp16
+# echo ""
+# echo ""
+# echo "************************ compile yolov8 models ***************************"
+# echo ""
+# trtexec --onnx=./onnx_models/yolov8n.onnx \
+# 		--saveEngine=./yolov8n.trt \
+# 		--buildOnly \
+# 		--minShapes=images:1x3x640x640 \
+# 		--optShapes=images:1x3x640x640 \
+# 		--maxShapes=images:8x3x640x640 \
+# 		--fp16
 
-echo ""
-trtexec --onnx=./onnx_models/yolov8s.onnx \
-		--saveEngine=./yolov8s.trt \
-		--buildOnly \
-		--minShapes=images:1x3x640x640 \
-		--optShapes=images:1x3x640x640 \
-		--maxShapes=images:8x3x640x640 \
-		--fp16
+# echo ""
+# trtexec --onnx=./onnx_models/yolov8s.onnx \
+# 		--saveEngine=./yolov8s.trt \
+# 		--buildOnly \
+# 		--minShapes=images:1x3x640x640 \
+# 		--optShapes=images:1x3x640x640 \
+# 		--maxShapes=images:8x3x640x640 \
+# 		--fp16
 
-echo ""
-trtexec --onnx=./onnx_models/yolov8m.onnx \
-		--saveEngine=./yolov8m.trt \
-		--buildOnly \
-		--minShapes=images:1x3x640x640 \
-		--optShapes=images:1x3x640x640 \
-		--maxShapes=images:8x3x640x640 \
-		--fp16
+# echo ""
+# trtexec --onnx=./onnx_models/yolov8m.onnx \
+# 		--saveEngine=./yolov8m.trt \
+# 		--buildOnly \
+# 		--minShapes=images:1x3x640x640 \
+# 		--optShapes=images:2x3x640x640 \
+# 		--maxShapes=images:8x3x640x640 \
+# 		--fp16
 
-echo ""
-trtexec --onnx=./onnx_models/yolov8l.onnx \
-		--saveEngine=./yolov8l.trt \
-		--buildOnly \
-		--minShapes=images:1x3x640x640 \
-		--optShapes=images:1x3x640x640 \
-		--maxShapes=images:8x3x640x640 \
-		--fp16
+# echo ""
+# trtexec --onnx=./onnx_models/yolov8l.onnx \
+# 		--saveEngine=./yolov8l.trt \
+# 		--buildOnly \
+# 		--minShapes=images:1x3x640x640 \
+# 		--optShapes=images:1x3x640x640 \
+# 		--maxShapes=images:8x3x640x640 \
+#		--fp16
 
 
-echo ""
-echo ""
-echo "************************ compile yolov10 models ***************************"
-echo ""
-trtexec --onnx=./onnx_models/yolov10n.onnx \
-		--saveEngine=./yolov10n.trt \
-		--buildOnly \
-		--minShapes=images:1x3x640x640 \
-		--optShapes=images:1x3x640x640 \
-		--maxShapes=images:8x3x640x640 \
-		--fp16
-
-echo ""
-trtexec --onnx=./onnx_models/yolov10s.onnx \
-		--saveEngine=./yolov10s.trt \
-		--buildOnly \
-		--minShapes=images:1x3x640x640 \
-		--optShapes=images:1x3x640x640 \
-		--maxShapes=images:8x3x640x640 \
-		--fp16
-
-echo ""
-trtexec --onnx=./onnx_models/yolov10m.onnx \
-		--saveEngine=./yolov10m.trt \
-		--buildOnly \
-		--minShapes=images:1x3x640x640 \
-		--optShapes=images:1x3x640x640 \
-		--maxShapes=images:8x3x640x640 \
-		--fp16
-
-echo ""
-trtexec --onnx=./onnx_models/yolov10l.onnx \
-		--saveEngine=./yolov10l.trt \
-		--buildOnly \
-		--minShapes=images:1x3x640x640 \
-		--optShapes=images:1x3x640x640 \
-		--maxShapes=images:8x3x640x640 \
-		--fp16
+# echo ""
+# echo ""
+# echo "************************ compile yolov10 models ***************************"
+# echo ""
+# trtexec --onnx=./onnx_models/yolov10n.onnx \
+# 		--saveEngine=./yolov10n.trt \
+# 		--buildOnly \
+# 		--minShapes=images:1x3x640x640 \
+# 		--optShapes=images:1x3x640x640 \
+# 		--maxShapes=images:8x3x640x640 \
+# 		--fp16
+#
+# echo ""
+# trtexec --onnx=./onnx_models/yolov10s.onnx \
+# 		--saveEngine=./yolov10s.trt \
+# 		--buildOnly \
+# 		--minShapes=images:1x3x640x640 \
+#		--optShapes=images:1x3x640x640 \
+#		--maxShapes=images:8x3x640x640 \
+#		--fp16
+#
+# echo ""
+# trtexec --onnx=./onnx_models/yolov10m.onnx \
+#		--saveEngine=./yolov10m.trt \
+#		--buildOnly \
+#		--minShapes=images:1x3x640x640 \
+#		--optShapes=images:1x3x640x640 \
+#		--maxShapes=images:8x3x640x640 \
+#		--fp16
+#
+# echo ""
+# trtexec --onnx=./onnx_models/yolov10l.onnx \
+# 		--saveEngine=./yolov10l.trt \
+# 		--buildOnly \
+# 		--minShapes=images:1x3x640x640 \
+# 		--optShapes=images:1x3x640x640 \
+#		--maxShapes=images:8x3x640x640 \
+#		--fp16
 
 
 # echo ""
@@ -230,3 +230,15 @@ trtexec --onnx=./onnx_models/yolov10l.onnx \
 # 		--saveEngine=./litemono-b.trt \
 # 		--buildOnly \
 # 		--fp16
+
+echo ""
+echo ""
+echo "************************ compile ReID models ***************************"
+echo ""
+trtexec --onnx=./onnx_models/market_bot_R50-ibn.onnx \
+		--saveEngine=./market_bot_R50-ibn.trt \
+		--buildOnly \
+		--minShapes=batched_inputs.1:1x3x256x128 \
+		--optShapes=batched_inputs.1:1x3x256x128 \
+		--maxShapes=batched_inputs.1:8x3x256x128 \
+		--fp16

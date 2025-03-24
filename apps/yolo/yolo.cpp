@@ -138,7 +138,7 @@ namespace Yolo{
 
             const int MAX_IMAGE_BBOX  = max_objects_;
             const int NUM_BOX_ELEMENT = 7;   // left, top, right, bottom, confidence, class, keepflag
-            int max_batch_size = model->get_max_batch_size();
+            int max_batch_size = model->get_max_batch_size(); 
             auto input = model->input();
             auto output = model->output();
             int num_classes;

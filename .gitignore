@@ -15,3 +15,7 @@
 **/*.engine
 **/*.trt
 **/*.trtmodel
+
+build/
+**/*.jpg
+**/*.mp4

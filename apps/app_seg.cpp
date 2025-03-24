@@ -12,7 +12,7 @@ void performance_seg(const string& engine_file, int gpuid){
         return;
     }
 
-    auto image = cv::imread("imgs/frame_0.jpg");
+    auto image = cv::imread("imgs/000000.jpg");
 
     cv::Mat res;
     // warmup
@@ -38,7 +38,7 @@ void inference_seg(const string& engine_file, int gpuid){
         return;
     }
 
-    auto image = cv::imread("imgs/frame_3.jpg");
+    auto image = cv::imread("imgs/000001.jpg");
     auto res = predictor->seg(image);
 
     cv::Mat color_img(image.size(), CV_8UC3, cv::Scalar(0, 0, 0));
@@ -54,7 +54,7 @@ void inference_seg(const string& engine_file, int gpuid){
     cv::Mat out_color_img(image.size(), CV_8UC3, cv::Scalar(0, 0, 0));
     float alpha = 0.7;
     out_color_img = (1 - alpha) * image + alpha * color_img;
-    cv::imwrite("infer_res/seg_frame_3.jpg", out_color_img);
+    cv::imwrite("infer_res/000001.jpg", out_color_img);
 }
 
 
