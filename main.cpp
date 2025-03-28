@@ -2,6 +2,7 @@
 #include <opencv2/opencv.hpp>
 #include "apps/yolo/yolo.hpp"
 #include "apps/yolop/yolop.hpp"
+#include "apps/yolov8/yolov8.hpp"
 
 #include "NvInferPlugin.h"
 
@@ -26,6 +27,8 @@ void performance_reid(const string& engine_file, int gpuid);
 void extract_and_save_gallery(const string& engine_file, int gpuid, const string& gallery_path, const string& save_path);
 void load_gallery_and_reid(const string& engine_file, int gpuid, const string& json_path, const string& query_path);
 bool test_ptq();
+
+void batch_inference(int batch);
 
 void test_rtdetr(){
 //    batch_inference("rtdetr_r50vd_6x_coco_dynamic_fp16.trt", 0);
@@ -56,10 +59,13 @@ void test_yolo(){
 //    batch_inference("yolov8n.trt", 0, Yolo::Type::V8);
 //    performance("yolov8n.trt", 0, Yolo::Type::V8);
 //    batch_inference("yolov8s.trt", 0, Yolo::Type::V8);
-    // performance("yolov8n.trt", 0, Yolo::Type::V8);   // Average time: 17.03 ms, FPS: 58.71
+    // performance("yolov8s.trt", 0, Yolo::Type::V8);   // Average time: 17.03 ms, FPS: 58.71
 //    batch_inference("/home/xk/Linfer/workspace/yolov8m.trt", 0, Yolo::Type::V8);  // 
-//    performance("yolov8l.trt", 0, Yolo::Type::V8);
-//    single_inference("yolov8l.trt", 0, Yolo::Type::V8);
+//    performance("yolov8s.trt", 0, Yolo::Type::V8);
+//    single_inference("yolov8n.trt", 0, Yolo::Type::V8);
+    vector<int> batches = {1, 2, 4, 8}; 
+    for(int i = 0; i < batches.size(); ++i)
+        batch_inference(batches[i]);
 }
 
 void test_track(){
@@ -92,11 +98,11 @@ int main(){
     bool status = initLibNvInferPlugins(nullptr, "");
 //    test_rtdetr();
 //    test_yolov10();
-    // test_yolo();
+    test_yolo();
 //    test_yolop();
 //    test_track();
 //    test_ptq();
     // test_seg();
-    test_reid();
+    // test_reid();
     return 0;
 }

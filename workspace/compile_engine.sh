@@ -81,9 +81,16 @@
 # 		--saveEngine=./yolov8s.trt \
 # 		--buildOnly \
 # 		--minShapes=images:1x3x640x640 \
-# 		--optShapes=images:1x3x640x640 \
-# 		--maxShapes=images:8x3x640x640 \
+# 		--optShapes=images:8x3x640x640 \
+# 		--maxShapes=images:16x3x640x640 \
 # 		--fp16
+
+# echo ""
+trtexec --onnx=./onnx_models/yolov8s.onnx \
+        --saveEngine=./yolov8s_batch8.trt \
+        --buildOnly \
+        --shapes=images:8x3x640x640 \
+        --fp16
 
 # echo ""
 # trtexec --onnx=./onnx_models/yolov8m.onnx \
@@ -231,14 +238,14 @@
 # 		--buildOnly \
 # 		--fp16
 
-echo ""
-echo ""
-echo "************************ compile ReID models ***************************"
-echo ""
-trtexec --onnx=./onnx_models/market_bot_R50-ibn.onnx \
-		--saveEngine=./market_bot_R50-ibn.trt \
-		--buildOnly \
-		--minShapes=batched_inputs.1:1x3x256x128 \
-		--optShapes=batched_inputs.1:1x3x256x128 \
-		--maxShapes=batched_inputs.1:8x3x256x128 \
-		--fp16
+# echo ""
+# echo ""
+# echo "************************ compile ReID models ***************************"
+# echo ""
+# trtexec --onnx=./onnx_models/market_bot_R50-ibn.onnx \
+# 		--saveEngine=./market_bot_R50-ibn.trt \
+# 		--buildOnly \
+# 		--minShapes=batched_inputs.1:1x3x256x128 \
+# 		--optShapes=batched_inputs.1:1x3x256x128 \
+# 		--maxShapes=batched_inputs.1:8x3x256x128 \
+# 		--fp16

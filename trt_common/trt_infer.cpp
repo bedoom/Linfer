@@ -394,9 +394,8 @@ namespace TRT {
             return;
         }
 
-        INFO(" Infer %p detail", this);
+        INFO("Infer %p [%s]", this, has_dynamic_dim() ? "DynamicShape" : "StaticShape");
         INFO("\tBase device: %s", CUDATools::device_description().c_str());
-        INFO("\tMax Batch Size: %d", this->get_max_batch_size());
         INFO("\tInputs: %d", inputs_.size());
         for(int i = 0; i < inputs_.size(); ++i){
             auto& tensor = inputs_[i];
@@ -409,6 +408,29 @@ namespace TRT {
             auto& name = outputs_names_[i];
             INFO("\t\t%d.%s : shape {%s}", i, name.c_str(), tensor->shape_string());
         }
+        // int num_input = 0;
+        // int num_output = 0;
+        // auto engine = this->context_->engine_;
+        // for (int i = 0; i < engine->getNbBindings(); ++i) {
+        //     if (engine->bindingIsInput(i))
+        //         num_input++;
+        //     else
+        //         num_output++;
+        //     }
+
+        //     INFO("Inputs: %d", num_input);
+        //     for (int i = 0; i < num_input; ++i) {
+        //     auto name = engine->getBindingName(i);
+        //     auto dim = engine->getBindingDimensions(i);
+        //     INFO("\t%d.%s : shape {%s}", i, name, format_shape(dim).c_str());
+        // }
+
+        // INFO("Outputs: %d", num_output);
+        //     for (int i = 0; i < num_output; ++i) {
+        //     auto name = engine->getBindingName(i + num_input);
+        //     auto dim = engine->getBindingDimensions(i + num_input);
+        //     INFO("\t%d.%s : shape {%s}", i, name, format_shape(dim).c_str());
+        // }
     }
 
     void InferImpl::set_stream(CUStream stream) {

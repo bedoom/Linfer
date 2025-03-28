@@ -70,11 +70,12 @@ void performance(const string& engine_file, int gpuid, Yolo::Type type){
         return;
     }
 
-    int batch = 8;
-    std::vector<cv::Mat> images{cv::imread("imgs/bus.jpg"), cv::imread("imgs/girl.jpg"),
+    int batch = 1;
+    std::vector<cv::Mat> pre_images{cv::imread("imgs/bus.jpg"), cv::imread("imgs/girl.jpg"),
                                 cv::imread("imgs/group.jpg"), cv::imread("imgs/yq.jpg")};
+    std::vector<cv::Mat> images;
     for (int i = images.size(); i < batch; ++i)
-        images.push_back(images[i % 4]);
+        images.push_back(pre_images[i % 4]);
 
     // warmup
     vector<shared_future<Yolo::BoxArray>> boxes_array;
@@ -83,8 +84,8 @@ void performance(const string& engine_file, int gpuid, Yolo::Type type){
     boxes_array.back().get();
     boxes_array.clear();
 
-    // 测试 100 轮
-    const int ntest = 100;
+    // 测试 400 张图片
+    const int ntest = 400 / batch;
     auto start = std::chrono::steady_clock::now();
     for(int i  = 0; i < ntest; ++i)
         boxes_array = infer->commits(images);

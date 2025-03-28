@@ -65,6 +65,7 @@ void inference_bytetrack(const string& engine_file, int gpuid, Yolo::Type type, 
     int width = images[0].cols;
     int height = images[0].rows;
     int fps = 10;  // 假设帧率为10
+    double all_time = 0;
 
     BYTETracker tracker;
     cv::Mat image;
