@@ -17,18 +17,18 @@ enum class Type : int {
   V8Seg = 6  // yolov8 instance segmentation
 };
 
-struct InstanceSegmentMap {
-  int width = 0, height = 0;      // width % 8 == 0
-  unsigned char *data = nullptr;  // is width * height memory
+// struct InstanceSegmentMap {
+//   int width = 0, height = 0;      // width % 8 == 0
+//   unsigned char *data = nullptr;  // is width * height memory
 
-  InstanceSegmentMap(int width, int height);
-  virtual ~InstanceSegmentMap();
-};
+//   InstanceSegmentMap(int width, int height);
+//   virtual ~InstanceSegmentMap();
+// };
 
 struct Box {
   float left, top, right, bottom, confidence;
   int class_label;
-  std::shared_ptr<InstanceSegmentMap> seg;  // valid only in segment task
+  // std::shared_ptr<InstanceSegmentMap> seg;  // valid only in segment task
 
   Box() = default;
   Box(float left, float top, float right, float bottom, float confidence, int class_label)

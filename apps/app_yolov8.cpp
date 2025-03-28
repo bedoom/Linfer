@@ -140,11 +140,11 @@ void single_inference() {
                   cv::Point(obj.left + width, obj.top), cv::Scalar(b, g, r), -1);
     cv::putText(image, caption, cv::Point(obj.left, obj.top - 5), 0, 1, cv::Scalar::all(0), 2, 16);
 
-    if (obj.seg) {
-      cv::imwrite(cv::format("%d_mask.jpg", i),
-                  cv::Mat(obj.seg->height, obj.seg->width, CV_8U, obj.seg->data));
-      i++;
-    }
+    // if (obj.seg) {
+    //   cv::imwrite(cv::format("%d_mask.jpg", i),
+    //               cv::Mat(obj.seg->height, obj.seg->width, CV_8U, obj.seg->data));
+    //   i++;
+    // }
   }
 
   printf("Save result to Result.jpg, %d objects\n", (int)objs.size());
