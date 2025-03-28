@@ -280,20 +280,6 @@ struct AffineMatrix {
   }
 };
 
-// InstanceSegmentMap::InstanceSegmentMap(int width, int height) {
-//   this->width = width;
-//   this->height = height;
-//   checkRuntime(cudaMallocHost(&this->data, width * height));
-// }
-
-// InstanceSegmentMap::~InstanceSegmentMap() {
-//   if (this->data) {
-//     checkRuntime(cudaFreeHost(this->data));
-//     this->data = nullptr;
-//   }
-//   this->width = 0;
-//   this->height = 0;
-// }
 
 class InferImpl : public Infer {
  public:
