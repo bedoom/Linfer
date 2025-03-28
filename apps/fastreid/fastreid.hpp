@@ -1,26 +1,49 @@
 
-#ifndef FASTREID_HPP
-#define FASTREID_HPP
+#ifndef __FASTREID_HPP
+#define __FASTREID_HPP
 
-
-#include <vector>
+#include <future>
 #include <memory>
 #include <string>
-#include <opencv2/opencv.hpp>
-#include "trt_common/trt_tensor.hpp"
+#include <vector>
 
 
 namespace FastReID {
 
-    using namespace std;
+enum class Type : int {
+    BOT = 0
+};
 
-    class ReID{
+struct ReIDResult {
+    int id;
+    std::vector<float> features;
+
+    ReIDResult() = default;
+    ReIDResult(int person_id, std::vector<float> features)
+        : id(person_id),
+            features(features) {}
+};
+
+struct Image {
+  const void *bgrptr = nullptr;
+  int width = 0, height = 0;
+
+  Image() = default;
+  Image(const void *bgrptr, int width, int height) : bgrptr(bgrptr), width(width), height(height) {}
+};
+
+typedef std::vector<ReIDResult> ReIDArray;
+
+class Infer {
     public:
-        virtual bool reid(const cv::Mat& image, vector<float32_t>& out) = 0;
-    };
+    virtual ReIDResult forward(const Image &image, void *stream = nullptr) = 0;
+    virtual std::vector<ReIDResult> forwards(const std::vector<Image> &images,
+                                         void *stream = nullptr) = 0;
+};
 
-    shared_ptr<ReID> create_reid(const string& engine_file, int gpuid = 0);
-}
+std::shared_ptr<Infer> load(const std::string &engine_file, Type type);
 
+const char *type_name(Type type);
 
-#endif //FASTREID_HPP
+};
+#endif //__FASTREID_HPP

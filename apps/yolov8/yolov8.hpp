@@ -20,7 +20,6 @@ enum class Type : int {
 struct Box {
   float left, top, right, bottom, confidence;
   int class_label;
-  // std::shared_ptr<InstanceSegmentMap> seg;  // valid only in segment task
 
   Box() = default;
   Box(float left, float top, float right, float bottom, float confidence, int class_label)

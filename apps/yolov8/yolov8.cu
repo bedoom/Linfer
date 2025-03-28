@@ -1,8 +1,8 @@
 #include "trt_common/infer.hpp"
-#include "yolov8.hpp"
 #include "trt_common/preprocess_kernel.cuh"
 #include "trt_common/cuda_tools.hpp"
 #include "trt_common/ilogger.hpp"
+#include "yolov8.hpp"
 
 namespace yolo {
 
@@ -290,13 +290,11 @@ class InferImpl : public Infer {
   float nms_threshold_;
   vector<shared_ptr<trt::Memory<unsigned char>>> preprocess_buffers_;
   trt::Memory<float> input_buffer_, bbox_predict_, output_boxarray_;
-  trt::Memory<float> segment_predict_;
   int network_input_width_, network_input_height_;
   CUDAKernel::Norm normalize_;
   vector<int> bbox_head_dims_;
   vector<int> segment_head_dims_;
   int num_classes_ = 0;
-  // bool has_segment_ = false;
   bool isdynamic_model_ = false;
   vector<shared_ptr<trt::Memory<unsigned char>>> box_segment_cache_;
 

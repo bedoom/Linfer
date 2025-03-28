@@ -23,7 +23,7 @@ void inference_yolop(const string& engine_file, YoloP::Type type, int gpuid);
 void performance_yolop(const string& engine_file, YoloP::Type type, int gpuid);
 void inference_seg(const string& engine_file, int gpuid);
 void performance_seg(const string& engine_file, int gpuid);
-void performance_reid(const string& engine_file, int gpuid);
+void performance_reid(const string& engine_file, const int &max_infer_batch);
 void extract_and_save_gallery(const string& engine_file, int gpuid, const string& gallery_path, const string& save_path);
 void load_gallery_and_reid(const string& engine_file, int gpuid, const string& json_path, const string& query_path);
 bool test_ptq();
@@ -88,9 +88,9 @@ void test_seg(){
 }
 
 void test_reid() {
-    // performance_reid("market_bot_R50-ibn.trt", 0);
+    performance_reid("market_bot_R50-ibn.trt", 8);
     // extract_and_save_gallery("market_bot_R50-ibn.trt", 0, "./gallery", "./reid.json");
-    load_gallery_and_reid("market_bot_R50-ibn.trt", 0, "./reid.json", "./query");
+    // load_gallery_and_reid("market_bot_R50-ibn.trt", 0, "./reid.json", "./query");
 
 }
 
@@ -98,11 +98,11 @@ int main(){
     bool status = initLibNvInferPlugins(nullptr, "");
 //    test_rtdetr();
 //    test_yolov10();
-    test_yolo();
+    // test_yolo();
 //    test_yolop();
 //    test_track();
 //    test_ptq();
     // test_seg();
-    // test_reid();
+    test_reid();
     return 0;
 }

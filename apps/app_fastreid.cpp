@@ -1,36 +1,46 @@
 #include <fstream>
 #include <opencv2/opencv.hpp>
 #include <nlohmann/json.hpp>
+#include "trt_common/cpm.hpp"
+#include "trt_common/infer.hpp"
 #include "fastreid/fastreid.hpp"
 
 using json = nlohmann::json;
 using namespace std;
 
-void performance_reid(const string& engine_file, int gpuid){
-    auto predictor = FastReID::create_reid(engine_file, gpuid);
-    if(predictor == nullptr){
-        printf("predictor is nullptr.\n");
-        return;
-    }
+static FastReID::Image cvimg(const cv::Mat &image) { return FastReID::Image(image.data, image.cols, image.rows); }
+
+void performance_reid(const string& engine_file, const int &max_infer_batch){
+    // int max_infer_batch = 8;
+    int batch = max_infer_batch;
 
     auto image = cv::imread("imgs/000000.jpg");
+    std::vector<cv::Mat> images(batch, image);
 
-    // float32_t 2048 res;
-    vector<float32_t> res;
+    cpm::Instance<FastReID::ReIDResult, FastReID::Image, FastReID::Infer> cpmi;
+    bool ok = cpmi.start([=] { return FastReID::load(engine_file, FastReID::Type::BOT); },
+                       max_infer_batch);
+
+    if(!ok) {
+        printf("cpmi 初始化失败\n");
+        return;
+    }
+    std::vector<FastReID::Image> yoloimages(images.size());
+    std::transform(images.begin(), images.end(), yoloimages.begin(), cvimg);
+
     // warmup
-    for(int i = 0; i < 10; ++i)
-        predictor->reid(image, res);
+    for(int i = 0; i < 10; ++i) 
+        cpmi.commits(yoloimages).back().get();
 
-    // 测试 100 轮
-    const int ntest = 100;
-    auto start = std::chrono::steady_clock::now();
+    trt::Timer timer;
+    string batch_str;
+    // 测试 400 张图片
+    const int ntest = 400 / batch;
+    timer.start();
     for(int i  = 0; i < ntest; ++i)
-        predictor->reid(image, res);
-
-    std::chrono::duration<double> during = std::chrono::steady_clock::now() - start;
-    double all_time = 1000.0 * during.count();
-    float avg_time = all_time / ntest;
-    printf("Average time: %.2f ms, FPS: %.2f\n", engine_file.c_str(), avg_time, 1000 / avg_time);
+        cpmi.commits(yoloimages).back().get();
+    batch_str = "BATCH"+to_string(batch);
+    timer.stop(batch_str.c_str());
 }
 
 float cosine_similarity(const vector<float>& a, const vector<float>& b) {
@@ -45,7 +55,7 @@ float cosine_similarity(const vector<float>& a, const vector<float>& b) {
     
     return dot / (sqrt(normA) * sqrt(normB));
 }
-
+#if 0
 void extract_and_save_gallery(const string& engine_file, int gpuid, const string& gallery_path, const string& save_path) {
     auto predictor = FastReID::create_reid(engine_file, gpuid);
     if(predictor == nullptr){
@@ -197,5 +207,5 @@ void load_gallery_and_reid(const string& engine_file, int gpuid, const string& j
     }
 }
 
-
+#endif
 

@@ -35,7 +35,7 @@ static const char *cocolabels[] = {"person",        "bicycle",      "car",
                                    "vase",          "scissors",     "teddy bear",
                                    "hair drier",    "toothbrush"};
 
-yolo::Image cvimg(const cv::Mat &image) { return yolo::Image(image.data, image.cols, image.rows); }
+static yolo::Image cvimg(const cv::Mat &image) { return yolo::Image(image.data, image.cols, image.rows); }
 
 void perf() {
   int max_infer_batch = 8;
