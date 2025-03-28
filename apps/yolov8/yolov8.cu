@@ -26,50 +26,6 @@ using namespace std;
     checkRuntime(cudaPeekAtLastError()); \
   } while (0)
 
-// enum class NormType : int { None = 0, MeanStd = 1, AlphaBeta = 2 };
-
-// enum class ChannelType : int { None = 0, SwapRB = 1 };
-
-/* 归一化操作，可以支持均值标准差，alpha beta，和swap RB */
-// struct Norm {
-//   float mean[3];
-//   float std[3];
-//   float alpha, beta;
-//   NormType type = NormType::None;
-//   ChannelType channel_type = ChannelType::None;
-
-//   // out = (x * alpha - mean) / std
-//   static Norm mean_std(const float mean[3], const float std[3], float alpha = 1 / 255.0f,
-//                        ChannelType channel_type = ChannelType::None);
-
-//   // out = x * alpha + beta
-//   static Norm alpha_beta(float alpha, float beta = 0, ChannelType channel_type = ChannelType::None);
-
-//   // None
-//   static Norm None();
-// };
-
-// Norm Norm::mean_std(const float mean[3], const float std[3], float alpha,
-//                     ChannelType channel_type) {
-//   Norm out;
-//   out.type = NormType::MeanStd;
-//   out.alpha = alpha;
-//   out.channel_type = channel_type;
-//   memcpy(out.mean, mean, sizeof(out.mean));
-//   memcpy(out.std, std, sizeof(out.std));
-//   return out;
-// }
-
-// Norm Norm::alpha_beta(float alpha, float beta, ChannelType channel_type) {
-//   Norm out;
-//   out.type = NormType::AlphaBeta;
-//   out.alpha = alpha;
-//   out.beta = beta;
-//   out.channel_type = channel_type;
-//   return out;
-// }
-
-// Norm Norm::None() { return Norm(); }
 
 const int NUM_BOX_ELEMENT = 8;  // left, top, right, bottom, confidence, class,
                                 // keepflag, row_index(output)
@@ -213,14 +169,6 @@ static __global__ void fast_nms_kernel(float *bboxes, int MAX_IMAGE_BOXES, float
   }
 }
 
-// static dim3 grid_dims(int numJobs) {
-//   int numBlockThreads = numJobs < GPU_BLOCK_THREADS ? numJobs : GPU_BLOCK_THREADS;
-//   return dim3(((numJobs + numBlockThreads - 1) / (float)numBlockThreads));
-// }
-
-// static dim3 block_dims(int numJobs) {
-//   return numJobs < GPU_BLOCK_THREADS ? numJobs : GPU_BLOCK_THREADS;
-// }
 
 static void decode_kernel_invoker(float *predict, int num_bboxes, int num_classes, int output_cdim,
                                   float confidence_threshold, float nms_threshold,
@@ -244,100 +192,6 @@ static void decode_kernel_invoker(float *predict, int num_bboxes, int num_classe
   checkKernel(fast_nms_kernel<<<grid, block, 0, stream>>>(parray, MAX_IMAGE_BOXES, nms_threshold));
 }
 
-// static __global__ void warp_affine_bilinear_and_normalize_plane_kernel(
-//     uint8_t *src, int src_line_size, int src_width, int src_height, float *dst, int dst_width,
-//     int dst_height, uint8_t const_value_st, float *warp_affine_matrix_2_3, Norm norm) {
-//   int dx = blockDim.x * blockIdx.x + threadIdx.x;
-//   int dy = blockDim.y * blockIdx.y + threadIdx.y;
-//   if (dx >= dst_width || dy >= dst_height) return;
-
-//   float m_x1 = warp_affine_matrix_2_3[0];
-//   float m_y1 = warp_affine_matrix_2_3[1];
-//   float m_z1 = warp_affine_matrix_2_3[2];
-//   float m_x2 = warp_affine_matrix_2_3[3];
-//   float m_y2 = warp_affine_matrix_2_3[4];
-//   float m_z2 = warp_affine_matrix_2_3[5];
-
-//   float src_x = m_x1 * dx + m_y1 * dy + m_z1;
-//   float src_y = m_x2 * dx + m_y2 * dy + m_z2;
-//   float c0, c1, c2;
-
-//   if (src_x <= -1 || src_x >= src_width || src_y <= -1 || src_y >= src_height) {
-//     // out of range
-//     c0 = const_value_st;
-//     c1 = const_value_st;
-//     c2 = const_value_st;
-//   } else {
-//     int y_low = floorf(src_y);
-//     int x_low = floorf(src_x);
-//     int y_high = y_low + 1;
-//     int x_high = x_low + 1;
-
-//     uint8_t const_value[] = {const_value_st, const_value_st, const_value_st};
-//     float ly = src_y - y_low;
-//     float lx = src_x - x_low;
-//     float hy = 1 - ly;
-//     float hx = 1 - lx;
-//     float w1 = hy * hx, w2 = hy * lx, w3 = ly * hx, w4 = ly * lx;
-//     uint8_t *v1 = const_value;
-//     uint8_t *v2 = const_value;
-//     uint8_t *v3 = const_value;
-//     uint8_t *v4 = const_value;
-//     if (y_low >= 0) {
-//       if (x_low >= 0) v1 = src + y_low * src_line_size + x_low * 3;
-
-//       if (x_high < src_width) v2 = src + y_low * src_line_size + x_high * 3;
-//     }
-
-//     if (y_high < src_height) {
-//       if (x_low >= 0) v3 = src + y_high * src_line_size + x_low * 3;
-
-//       if (x_high < src_width) v4 = src + y_high * src_line_size + x_high * 3;
-//     }
-
-//     // same to opencv
-//     c0 = floorf(w1 * v1[0] + w2 * v2[0] + w3 * v3[0] + w4 * v4[0] + 0.5f);
-//     c1 = floorf(w1 * v1[1] + w2 * v2[1] + w3 * v3[1] + w4 * v4[1] + 0.5f);
-//     c2 = floorf(w1 * v1[2] + w2 * v2[2] + w3 * v3[2] + w4 * v4[2] + 0.5f);
-//   }
-
-//   if (norm.channel_type == ChannelType::SwapRB) {
-//     float t = c2;
-//     c2 = c0;
-//     c0 = t;
-//   }
-
-//   if (norm.type == NormType::MeanStd) {
-//     c0 = (c0 * norm.alpha - norm.mean[0]) / norm.std[0];
-//     c1 = (c1 * norm.alpha - norm.mean[1]) / norm.std[1];
-//     c2 = (c2 * norm.alpha - norm.mean[2]) / norm.std[2];
-//   } else if (norm.type == NormType::AlphaBeta) {
-//     c0 = c0 * norm.alpha + norm.beta;
-//     c1 = c1 * norm.alpha + norm.beta;
-//     c2 = c2 * norm.alpha + norm.beta;
-//   }
-
-//   int area = dst_width * dst_height;
-//   float *pdst_c0 = dst + dy * dst_width + dx;
-//   float *pdst_c1 = pdst_c0 + area;
-//   float *pdst_c2 = pdst_c1 + area;
-//   *pdst_c0 = c0;
-//   *pdst_c1 = c1;
-//   *pdst_c2 = c2;
-// }
-
-// static void warp_affine_bilinear_and_normalize_plane(uint8_t *src, int src_line_size, int src_width,
-//                                                      int src_height, float *dst, int dst_width,
-//                                                      int dst_height, float *matrix_2_3,
-//                                                      uint8_t const_value, const Norm &norm,
-//                                                      cudaStream_t stream) {
-//   dim3 grid((dst_width + 31) / 32, (dst_height + 31) / 32);
-//   dim3 block(32, 32);
-
-//   checkKernel(warp_affine_bilinear_and_normalize_plane_kernel<<<grid, block, 0, stream>>>(
-//       src, src_line_size, src_width, src_height, dst, dst_width, dst_height, const_value,
-//       matrix_2_3, norm));
-// }
 
 static __global__ void decode_single_mask_kernel(int left, int top, float *mask_weights,
                                                  float *mask_predict, int mask_width,
@@ -470,10 +324,6 @@ class InferImpl : public Infer {
     output_boxarray_.gpu(batch_size * (32 + MAX_IMAGE_BOXES * NUM_BOX_ELEMENT));
     output_boxarray_.cpu(batch_size * (32 + MAX_IMAGE_BOXES * NUM_BOX_ELEMENT));
 
-    // if (has_segment_)
-    //   segment_predict_.gpu(batch_size * segment_head_dims_[1] * segment_head_dims_[2] *
-    //                        segment_head_dims_[3]);
-
     if ((int)preprocess_buffers_.size() < batch_size) {
       for (int i = preprocess_buffers_.size(); i < batch_size; ++i)
         preprocess_buffers_.push_back(make_shared<trt::Memory<unsigned char>>());
@@ -525,11 +375,6 @@ class InferImpl : public Infer {
 
     auto input_dim = trt_->static_dims(0);
     bbox_head_dims_ = trt_->static_dims(1);
-    // has_segment_ = type == Type::V8Seg;
-    // if (has_segment_) {
-    //   bbox_head_dims_ = trt_->static_dims(2);
-    //   segment_head_dims_ = trt_->static_dims(1);
-    // }
     network_input_width_ = input_dim[3];
     network_input_height_ = input_dim[2];
     isdynamic_model_ = trt_->has_dynamic_dim();
@@ -544,9 +389,6 @@ class InferImpl : public Infer {
       normalize_ = CUDAKernel::Norm::alpha_beta(1 / 255.0f, 0.0f, CUDAKernel::ChannelType::Invert);
       num_classes_ = bbox_head_dims_[2] - 4 - segment_head_dims_[1];
     } else if (type == Type::X) {
-      // float mean[] = {0.485, 0.456, 0.406};
-      // float std[]  = {0.229, 0.224, 0.225};
-      // normalize_ = Norm::mean_std(mean, std, 1/255.0f, ChannelType::SwapRB);
       normalize_ = CUDAKernel::Norm::None();
       num_classes_ = bbox_head_dims_[2] - 5;
     } else {
@@ -592,10 +434,6 @@ class InferImpl : public Infer {
     float *bbox_output_device = bbox_predict_.gpu();
     vector<void *> bindings{input_buffer_.gpu(), bbox_output_device};
 
-    // if (has_segment_) {
-    //   bindings = {input_buffer_.gpu(), segment_predict_.gpu(), bbox_output_device};
-    // }
-
     if (!trt_->forward(bindings, stream)) {
       INFO("Failed to tensorRT forward.");
       return {};
@@ -629,56 +467,10 @@ class InferImpl : public Infer {
         int keepflag = pbox[6];
         if (keepflag == 1) {
           Box result_object_box(pbox[0], pbox[1], pbox[2], pbox[3], pbox[4], label);
-          // if (has_segment_) {
-            // int row_index = pbox[7];
-            // int mask_dim = segment_head_dims_[1];
-            // float *mask_weights = bbox_output_device +
-            //                       (ib * bbox_head_dims_[1] + row_index) * bbox_head_dims_[2] +
-            //                       num_classes_ + 4;
-
-            // float *mask_head_predict = segment_predict_.gpu();
-            // float left, top, right, bottom;
-            // float *i2d = affine_matrixs[ib].i2d;
-            // affine_project(i2d, pbox[0], pbox[1], &left, &top);
-            // affine_project(i2d, pbox[2], pbox[3], &right, &bottom);
-
-            // float box_width = right - left;
-            // float box_height = bottom - top;
-
-            // float scale_to_predict_x = segment_head_dims_[3] / (float)network_input_width_;
-            // float scale_to_predict_y = segment_head_dims_[2] / (float)network_input_height_;
-            // int mask_out_width = box_width * scale_to_predict_x + 0.5f;
-            // int mask_out_height = box_height * scale_to_predict_y + 0.5f;
-
-            // if (mask_out_width > 0 && mask_out_height > 0) {
-            //   if (imemory >= (int)box_segment_cache_.size()) {
-            //     box_segment_cache_.push_back(std::make_shared<trt::Memory<unsigned char>>());
-            //   }
-
-            //   int bytes_of_mask_out = mask_out_width * mask_out_height;
-            //   auto box_segment_output_memory = box_segment_cache_[imemory];
-            //   result_object_box.seg =
-            //       make_shared<InstanceSegmentMap>(mask_out_width, mask_out_height);
-
-            //   unsigned char *mask_out_device = box_segment_output_memory->gpu(bytes_of_mask_out);
-            //   unsigned char *mask_out_host = result_object_box.seg->data;
-            //   decode_single_mask(left * scale_to_predict_x, top * scale_to_predict_y, mask_weights,
-            //                      mask_head_predict + ib * segment_head_dims_[1] *
-            //                                              segment_head_dims_[2] *
-            //                                              segment_head_dims_[3],
-            //                      segment_head_dims_[3], segment_head_dims_[2], mask_out_device,
-            //                      mask_dim, mask_out_width, mask_out_height, stream_);
-            //   checkRuntime(cudaMemcpyAsync(mask_out_host, mask_out_device,
-            //                                box_segment_output_memory->gpu_bytes(),
-            //                                cudaMemcpyDeviceToHost, stream_));
-            // }
-          // }
           output.emplace_back(result_object_box);
         }
       }
     }
-
-    // if (has_segment_) checkRuntime(cudaStreamSynchronize(stream_));
 
     return arrout;
   }
