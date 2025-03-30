@@ -28,7 +28,9 @@ void extract_and_save_gallery(const string& engine_file, int gpuid, const string
 void load_gallery_and_reid(const string& engine_file, int gpuid, const string& json_path, const string& query_path);
 bool test_ptq();
 
+// yolov8 perf
 void batch_inference(int batch);
+void precision_batch_inference(const std::string &img_folder, const string &result_path, const std::string &engine_path, int batch_size, int flush_interval);
 
 void test_rtdetr(){
 //    batch_inference("rtdetr_r50vd_6x_coco_dynamic_fp16.trt", 0);
@@ -94,6 +96,12 @@ void test_reid() {
 
 }
 
+void test_yolov8() {
+    int batch_size = 8;
+    int flush_val = 200;
+    precision_batch_inference("imgs/c3", "yolov8n_result.txt", "yolov8n.trt", batch_size, flush_val);
+}
+
 int main(){
     bool status = initLibNvInferPlugins(nullptr, "");
 //    test_rtdetr();
@@ -103,6 +111,7 @@ int main(){
 //    test_track();
 //    test_ptq();
     // test_seg();
-    test_reid();
+    // test_reid();
+    test_yolov8();
     return 0;
 }

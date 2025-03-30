@@ -14,6 +14,7 @@ file(GLOB_RECURSE CPPS
         ${PROJECT_SOURCE_DIR}/apps/*.cu
         ${PROJECT_SOURCE_DIR}/trt_common/*.cpp
         ${PROJECT_SOURCE_DIR}/trt_common/*.cu
+        ${PROJECT_SOURCE_DIR}/perf/*.cpp
         )
 
 find_package(CUDAToolkit REQUIRED)

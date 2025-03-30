@@ -4,6 +4,7 @@
 #include "trt_common/cpm.hpp"
 #include "trt_common/infer.hpp"
 #include "yolov8/yolov8.hpp"
+#include <iostream>
 
 using namespace std;
 
@@ -150,12 +151,3 @@ void single_inference() {
   printf("Save result to Result.jpg, %d objects\n", (int)objs.size());
   cv::imwrite("Result.jpg", image);
 }
-
-// int main() {
-//   // perf();
-//   vector<int> batches = {1, 2, 4, 8, 16}; 
-//   for(int i = 0; i < batches.size(); ++i)
-//     batch_inference(batches[i]);
-//   // single_inference();
-//   return 0;
-// }
