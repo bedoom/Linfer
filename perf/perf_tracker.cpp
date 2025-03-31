@@ -80,7 +80,7 @@ void precision_bytetrack_inference(const std::string& img_folder, const string& 
                 // ✅ 写入跟踪结果（MOT格式）：frame, id, x, y, w, h, score, class, visibility
                 result_file << frame_id << "," << track.track_id << ","
                             << tlwh[0] << "," << tlwh[1] << "," << tlwh[2] << "," << tlwh[3] << ","
-                            << 1.0 << "," << 0 << "," << 1.0 << "\n";
+                            << track.score << "," << 0 << "," << 1.0 << "\n";
             }
             if(frame_id % 1000 == 0)
                 printf("Processed frame %d\n", frame_id);
