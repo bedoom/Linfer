@@ -1,16 +1,17 @@
-
-
 #include "trt_common/ilogger.hpp"
-#include "yolo/yolo.hpp"
+#include "trt_common/cpm.hpp"
+#include "trt_common/infer.hpp"
+#include "yolov8/yolov8.hpp"
 #include <opencv2/opencv.hpp>
 #include "bytetrack/BYTETracker.h"
 #include <cstdio>
 
 using namespace std;
 
-template<typename Cond>
-static vector<Object> det2tracks(const Yolo::BoxArray& array, const Cond& cond){
+static yolo::Image cvimg(const cv::Mat &image) { return yolo::Image(image.data, image.cols, image.rows); }
 
+template<typename Cond>
+static vector<Object> det2tracks(const yolo::BoxArray& array, const Cond& cond){
     vector<Object> outputs;
     for(int i = 0; i < array.size(); ++i){
         auto& abox = array[i];
@@ -19,7 +20,7 @@ static vector<Object> det2tracks(const Yolo::BoxArray& array, const Cond& cond){
 
         Object obox;
         obox.prob = abox.confidence;
-        obox.label = abox.label;
+        obox.label = abox.class_label;
         obox.rect[0] = abox.left;
         obox.rect[1] = abox.top;
         obox.rect[2] = abox.right - abox.left;
@@ -30,27 +31,14 @@ static vector<Object> det2tracks(const Yolo::BoxArray& array, const Cond& cond){
 }
 
 
-void inference_bytetrack(const string& engine_file, int gpuid, Yolo::Type type, const string& video_file){
-
-    auto engine = Yolo::create_infer(
-            engine_file,                // engine file
-            type,                       // yolo type, Yolo::Type::V5 / Yolo::Type::X
-            gpuid,                   // gpu id
-            0.25f,                      // confidence threshold
-            0.45f,                      // nms threshold
-            Yolo::NMSMethod::CUDA,   // NMS method, fast GPU / CPU
-            1024,                       // max objects
-            false                       // preprocess use multi stream
-    );
-    if(engine == nullptr){
+void inference_bytetrack(const string& engine_file, int gpuid, yolo::Type type, const string& video_file){
+    cpm::Instance<yolo::BoxArray, yolo::Image, yolo::Infer> cpmi;
+    bool ok = cpmi.start([=] { return yolo::load(engine_file, yolo::Type::V8); },
+                       1);
+    if(ok == false){
         INFOE("Engine is nullptr");
         return;
     }
-
-    // cv::VideoCapture cap(video_file);
-    // auto fps = cap.get(cv::CAP_PROP_FPS);
-    // int width = cap.get(cv::CAP_PROP_FRAME_WIDTH);
-    // int height = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
 
     vector<cv::String> files_;
     files_.reserve(100);
@@ -77,9 +65,9 @@ void inference_bytetrack(const string& engine_file, int gpuid, Yolo::Type type, 
                                         ).set_max_time_lost(150);
 
     cv::VideoWriter writer("videos/res_mot.mp4", cv::VideoWriter::fourcc('M', 'P', 'E', 'G'), fps, cv::Size(width, height));
-    auto cond = [](const Yolo::Box& b){return b.label == 0;};
+    auto cond = [](const yolo::Box& b){return b.class_label == 0;};
 
-    shared_future<vector<Yolo::Box>> prev_fut;
+    shared_future<yolo::BoxArray> prev_fut;
     int t = 0;
     #if 0
     while(cap.read(image)){
@@ -139,7 +127,7 @@ void inference_bytetrack(const string& engine_file, int gpuid, Yolo::Type type, 
         }
 
         image.copyTo(prev_image);
-        prev_fut = engine->commit(image);
+        prev_fut = cpmi.commit(cvimg(image));
 
     }
     #endif
