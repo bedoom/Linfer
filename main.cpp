@@ -16,8 +16,8 @@ void batch_inference(const string& engine_file, int gpuid);
 void single_inference(const string& engine_file, int gpuid);
 void performance(const string& engine_file, int gpuid, Yolo::Type type);
 void batch_inference(const string& engine_file, int gpuid, Yolo::Type type);
-void single_inference(const string& engine_file, int gpuid, Yolo::Type type);
-void inference_bytetrack(const string& engine_file, int gpuid, Yolo::Type type, const string& video_file);
+void single_inference(const string& engine_file, int gpuid, yolo::Type type);
+void inference_bytetrack(const string& engine_file, int gpuid, yolo::Type type, const string& video_file);
 void infer_track(int Mode, const string& path);
 void inference_yolop(const string& engine_file, YoloP::Type type, int gpuid);
 void performance_yolop(const string& engine_file, YoloP::Type type, int gpuid);
@@ -31,6 +31,9 @@ bool test_ptq();
 // yolov8 perf
 void batch_inference(int batch);
 void precision_batch_inference(const std::string &img_folder, const string &result_path, const std::string &engine_path, int batch_size, int flush_interval);
+
+// track perf
+void precision_bytetrack_inference(const std::string& img_folder, const string& result_path, const std::string& engine_path, yolo::Type type);
 
 void test_rtdetr(){
 //    batch_inference("rtdetr_r50vd_6x_coco_dynamic_fp16.trt", 0);
@@ -71,7 +74,8 @@ void test_yolo(){
 }
 
 void test_track(){
-   inference_bytetrack("yolov8n.trt", 0, Yolo::Type::V8, "videos/palace.mp4");
+//    inference_bytetrack("yolov8n.trt", 0, yolo::Type::V8, "videos/palace.mp4");
+   precision_bytetrack_inference("imgs/c3", "yolov8n_result.txt", "yolov8n.trt", yolo::Type::V8);
     // infer_track(2, "Woman/img/%04d.jpg");
 }
 
@@ -108,10 +112,10 @@ int main(){
 //    test_yolov10();
     // test_yolo();
 //    test_yolop();
-//    test_track();
+   test_track();
 //    test_ptq();
     // test_seg();
     // test_reid();
-    test_yolov8();
+    // test_yolov8();
     return 0;
 }
