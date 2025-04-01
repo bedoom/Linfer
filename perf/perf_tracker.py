@@ -18,8 +18,8 @@ def correct_bbox_coords(df, img_width=1920, img_height=1080):
     return df
 
 # 加载 Ground Truth 和 预测数据
-gt_df = pd.read_csv("gt.txt", header=None, names=['frame', 'id', 'x', 'y', 'w', 'h'])
-pred_df = pd.read_csv("track_results.txt", header=None, names=['frame', 'id', 'x', 'y', 'w', 'h', 'conf', 'class', 'vis'])
+gt_df = pd.read_csv("/home/hzq/projects/Linfer/perf/gt.txt", header=None, names=['frame', 'id', 'x', 'y', 'w', 'h'])
+pred_df = pd.read_csv("/home/hzq/projects/Linfer/workspace/track_results.txt", header=None, names=['frame', 'id', 'x', 'y', 'w', 'h', 'conf', 'class', 'vis'])
 
 # 修正 Ground Truth 坐标
 gt_df = correct_bbox_coords(gt_df)
@@ -51,12 +51,12 @@ for frame in frames:
             iou = gbox.intersection(pbox).area / gbox.union(pbox).area
             dists[gt_frame.index.get_loc(i), pred_frame.index.get_loc(j)] = 1 - iou  # 转换为距离
 
-    # 更新 MOTAccumulator，匹配距离小于 0.5 的目标
+    # 更新 MOTAccumulator
     acc.update(gt_ids, pred_ids, dists)
 
 # 计算评估指标
 mh = mm.metrics.create()
-summary = mh.compute(acc, metrics=['num_frames', 'idf1', 'mota', 'motp', 'fp', 'fn', 'ids', 'precision', 'recall'], name='summary')
+summary = mh.compute(acc, metrics=mm.metrics.motchallenge_metrics, name='summary')
 
 # 输出结果
 print(mm.io.render_summary(summary, formatters=mh.formatters, namemap=mm.io.motchallenge_metric_names))
