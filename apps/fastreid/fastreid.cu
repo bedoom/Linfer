@@ -113,6 +113,7 @@ class InferImpl : public Infer {
   void preprocess(int ibatch, const Image &image,
                   shared_ptr<trt::Memory<unsigned char>> preprocess_buffer, AffineMatrix &affine,
                   void *stream = nullptr) {
+    
     affine.compute(make_tuple(image.width, image.height),
                    make_tuple(network_input_width_, network_input_height_));
 
@@ -158,7 +159,8 @@ class InferImpl : public Infer {
 
     feature_dim = trt_->static_dims(1)[1];  // 特征向量维度
     if(type == Type::BOT) {
-        normalize_ = CUDAKernel::Norm::alpha_beta(1 / 255.0f, 0.0f, CUDAKernel::ChannelType::Invert);
+        // normalize_ = CUDAKernel::Norm::alpha_beta(1 / 255.0f, 0.0f, CUDAKernel::ChannelType::Invert);
+        normalize_ = CUDAKernel::Norm::None();
     } else {
       INFO("Unsupport type %d", type);
     }

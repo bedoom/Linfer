@@ -24,8 +24,8 @@ void performance_yolop(const string& engine_file, YoloP::Type type, int gpuid);
 void inference_seg(const string& engine_file, int gpuid);
 void performance_seg(const string& engine_file, int gpuid);
 void performance_reid(const string& engine_file, const int &max_infer_batch);
-void extract_and_save_gallery(const string& engine_file, int gpuid, const string& gallery_path, const string& save_path);
-void load_gallery_and_reid(const string& engine_file, int gpuid, const string& json_path, const string& query_path);
+void load_gallery_and_reid(const string& engine_file, const string& json_path, const string& query_path, const int& max_infer_batch=1);
+void extract_and_save_gallery(const string& engine_file, const string& gallery_path, const string& save_path, const int& max_infer_batch=1);
 bool test_ptq();
 
 // yolov8 perf
@@ -34,6 +34,9 @@ void precision_batch_inference(const std::string &img_folder, const string &resu
 
 // track perf
 void precision_bytetrack_inference(const std::string& img_folder, const string& result_path, const std::string& engine_path, yolo::Type type);
+
+// reid perf
+void extract_and_save_json(const string& engine_file, const int& max_infer_batch=1); 
 
 void test_rtdetr(){
 //    batch_inference("rtdetr_r50vd_6x_coco_dynamic_fp16.trt", 0);
@@ -94,10 +97,10 @@ void test_seg(){
 }
 
 void test_reid() {
-    performance_reid("market_bot_R50-ibn.trt", 8);
-    // extract_and_save_gallery("market_bot_R50-ibn.trt", 0, "./gallery", "./reid.json");
-    // load_gallery_and_reid("market_bot_R50-ibn.trt", 0, "./reid.json", "./query");
-
+    // performance_reid("market_bot_R50-ibn.trt", 8);
+    // extract_and_save_gallery("market_bot_R50.trt", "./gallery", "./reid.json");
+    // load_gallery_and_reid("market_bot_R50.trt", "./reid.json", "./query");
+    // extract_and_save_json("market_bot_R50.trt");
 }
 
 void test_yolov8() {
@@ -112,7 +115,7 @@ int main(){
 //    test_yolov10();
     // test_yolo();
 //    test_yolop();
-   test_track();
+//   test_track();
 //    test_ptq();
     // test_seg();
     // test_reid();

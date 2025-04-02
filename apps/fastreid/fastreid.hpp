@@ -15,11 +15,11 @@ enum class Type : int {
 };
 
 struct ReIDResult {
-    int id;
+    std::string id;
     std::vector<float> features;
 
     ReIDResult() = default;
-    ReIDResult(int person_id, std::vector<float> features)
+    ReIDResult(std::string person_id, std::vector<float> features)
         : id(person_id),
             features(features) {}
 };
