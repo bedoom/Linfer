@@ -45,7 +45,6 @@ void precision_bytetrack_inference(const std::string& img_folder, const string& 
     cv::glob(img_folder, all_paths, true);  // 遍历图像路径（递归）
     cout << "Load " << all_paths.size() << " images." << endl;
 
-    ofstream outfile(result_path);
     vector<string> result_buffer;
 
     BYTETracker tracker;
@@ -61,7 +60,7 @@ void precision_bytetrack_inference(const std::string& img_folder, const string& 
     int frame_id = 0;
 
     // 创建结果文件（跟踪结果）
-    std::ofstream result_file("track_results.txt");
+    std::ofstream result_file(result_path);
     if (!result_file.is_open()) {
         INFOE("Failed to open result file.");
         return;
@@ -91,5 +90,5 @@ void precision_bytetrack_inference(const std::string& img_folder, const string& 
         prev_fut = cpmi.commit(cvimg(image));
     }
     result_file.close();
-    printf("Done. Tracking results saved to track_results.txt\n");
+    printf("Done. Tracking results saved to %s", result_path.c_str());
 }

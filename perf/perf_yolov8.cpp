@@ -147,5 +147,5 @@ void precision_batch_inference(const std::string& img_folder, const string& resu
     }
 
     outfile.close();
-    cout << "All done. Results saved to result.txt" << endl;
+    cout << "All done. Results saved to " << result_path.c_str()<< endl;
 }

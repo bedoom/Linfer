@@ -86,11 +86,11 @@
 # 		--fp16
 
 # echo ""
-trtexec --onnx=./onnx_models/yolov8s.onnx \
-        --saveEngine=./yolov8s_batch8.trt \
-        --buildOnly \
-        --shapes=images:8x3x640x640 \
-        --fp16
+# trtexec --onnx=./onnx_models/yolov8s.onnx \
+#         --saveEngine=./yolov8s_batch8.trt \
+#         --buildOnly \
+#         --shapes=images:8x3x640x640 \
+#         --fp16
 
 # echo ""
 # trtexec --onnx=./onnx_models/yolov8m.onnx \
@@ -249,3 +249,8 @@ trtexec --onnx=./onnx_models/yolov8s.onnx \
 # 		--optShapes=batched_inputs.1:1x3x256x128 \
 # 		--maxShapes=batched_inputs.1:8x3x256x128 \
 # 		--fp16
+
+trtexec --onnx=./onnx_models/baseline_R50.onnx \
+        --saveEngine=./market_bot_R50.trt \
+        --buildOnly \
+        --fp16

@@ -1,4 +1,8 @@
+#include <iostream>
 #include <fstream>
+#include <vector>
+#include <map>
+#include <string>
 #include <opencv2/opencv.hpp>
 #include <nlohmann/json.hpp>
 #include "trt_common/cpm.hpp"
@@ -43,23 +47,42 @@ void performance_reid(const string& engine_file, const int &max_infer_batch){
     timer.stop(batch_str.c_str());
 }
 
-float cosine_similarity(const vector<float>& a, const vector<float>& b) {
-    float dot = 0.0f, normA = 0.0f, normB = 0.0f;
-    size_t size = a.size();
-    
-    for (size_t i = 0; i < size; i++) {
-        dot += a[i] * b[i];
-        normA += a[i] * a[i];
-        normB += b[i] * b[i];
+void normalize(vector<float>& features) {
+    float norm = 0.0f;
+    for (size_t i = 0; i < features.size(); ++i) {
+        norm += features[i] * features[i];
     }
+    norm = sqrt(norm);
     
-    return dot / (sqrt(normA) * sqrt(normB));
+    if (norm > 0) {
+        for (size_t i = 0; i < features.size(); ++i) {
+            features[i] /= norm;
+        }
+    }
 }
-#if 0
-void extract_and_save_gallery(const string& engine_file, int gpuid, const string& gallery_path, const string& save_path) {
-    auto predictor = FastReID::create_reid(engine_file, gpuid);
-    if(predictor == nullptr){
-        printf("predictor is nullptr.\n");
+
+float cosine_similarity(const vector<float>& a, const vector<float>& b) {
+    // Normalize features before calculating cosine similarity
+    vector<float> a_normalized = a;
+    vector<float> b_normalized = b;
+    normalize(a_normalized);
+    normalize(b_normalized);
+
+    float dot = 0.0f;
+    for (size_t i = 0; i < a.size(); i++) {
+        dot += a_normalized[i] * b_normalized[i];
+    }
+    return dot;
+}
+
+#if 1
+void extract_and_save_gallery(const string& engine_file, const string& gallery_path, const string& save_path, const int& max_infer_batch) {
+    cpm::Instance<FastReID::ReIDResult, FastReID::Image, FastReID::Infer> predictor;
+    bool ok = predictor.start([=] { return FastReID::load(engine_file, FastReID::Type::BOT); },
+                       max_infer_batch);
+
+    if(!ok) {
+        printf("cpmi 初始化失败\n");
         return;
     }
 
@@ -72,7 +95,8 @@ void extract_and_save_gallery(const string& engine_file, int gpuid, const string
     double total_time_ms = 0;
     int processed_images = 0;
 
-    map<string, vector<vector<float32_t> > > reid_features;
+    // map<string, vector<vector<float> > > reid_features;
+    map<string, vector<vector<float>>> reid_features;
 
     for(const auto& file : files){
         string filename = file.substr(file.find_last_of("/\\") + 1);
@@ -84,18 +108,13 @@ void extract_and_save_gallery(const string& engine_file, int gpuid, const string
 
         string reid = filename.substr(0, pos);
 
-        auto image = cv::imread(file);
+        auto origin_image = cv::imread(file);
+        cv::Mat image;
+        cv::cvtColor(origin_image, image, cv::COLOR_BGR2RGB);
 
-        // 提取 ReID 特征
-        auto start_time = chrono::high_resolution_clock::now();
-        vector<float32_t> res;
-        predictor->reid(image, res);
-        auto end_time = chrono::high_resolution_clock::now();
-        double elapsed_ms = chrono::duration<double, std::milli>(end_time - start_time).count();
-        total_time_ms += elapsed_ms;
-        processed_images++;
-
-        reid_features[reid].push_back(res);
+        // 提取 ReID 
+        auto result = predictor.commit(cvimg(image)).get();
+        reid_features[reid].push_back(result.features);
     }
 
     json result_json;
@@ -115,12 +134,9 @@ void extract_and_save_gallery(const string& engine_file, int gpuid, const string
         printf("错误: 无法打开文件 %s\n", save_path.c_str());
     }
 
-    double avg_time = processed_images > 0 ? (total_time_ms / processed_images) : 0;
-    printf("处理完成，总图像数: %d，平均特征提取时间: %.2f ms\n", processed_images, avg_time);
-
 }
 
-bool load_gallery_features(const string& json_path, unordered_map<string, vector<vector<float> > >& gallery_reid_features) {
+bool load_gallery_features(const string& json_path, map<string, vector<vector<float> > >& gallery_reid_features) {
     ifstream in_file(json_path);
     if (!in_file.is_open()) {
         cerr << "Error: Unable to open JSON file: " << json_path << endl;
@@ -142,17 +158,20 @@ bool load_gallery_features(const string& json_path, unordered_map<string, vector
 }
 
 // Load query images and perform ReID
-void load_gallery_and_reid(const string& engine_file, int gpuid, const string& json_path, const string& query_path) {
+void load_gallery_and_reid(const string& engine_file, const string& json_path, const string& query_path, const int& max_infer_batch) {
     // 1. Load gallery features using Eigen vectors
-    unordered_map<string, vector<vector<float> > > gallery_reid_features;
+    map<string, vector<vector<float> > > gallery_reid_features;
     if (!load_gallery_features(json_path, gallery_reid_features)) {
         return;
     }
 
     // 2️. Load ReID model
-    auto predictor = FastReID::create_reid(engine_file, gpuid);
-    if (predictor == nullptr) {
-        cerr << "Error: Unable to load ReID model.\n";
+    cpm::Instance<FastReID::ReIDResult, FastReID::Image, FastReID::Infer> predictor;
+    bool ok = predictor.start([=] { return FastReID::load(engine_file, FastReID::Type::BOT); },
+                       max_infer_batch);
+
+    if(!ok) {
+        printf("cpmi 初始化失败\n");
         return;
     }
 
@@ -168,22 +187,24 @@ void load_gallery_and_reid(const string& engine_file, int gpuid, const string& j
     cout << "Processing " << query_files.size() << " query images...\n";
 
     for (const auto& file : query_files) {
-        cv::Mat image = cv::imread(file);
+        cv::Mat origin_image = cv::imread(file);
+        cv::Mat image;
+        cv::cvtColor(origin_image, image, cv::COLOR_BGR2RGB);
+
         if (image.empty()) {
             cerr << "Warning: Unable to read image: " << file << endl;
             continue;
         }
 
         // 4️. Extract features using FastReID
-        vector<float> query_feature;
-        predictor->reid(image, query_feature);
+        auto res = predictor.commit(cvimg(image)).get();
 
         // 5️. Find the best match in the gallery
         priority_queue<pair<float, string>, vector<pair<float, string>>, greater<pair<float, string>>> top_matches;
 
         for (const auto& [gallery_reid, feature_list] : gallery_reid_features) {
             for (const auto& gallery_feature : feature_list) {
-                float similarity = cosine_similarity(query_feature, gallery_feature);
+                float similarity = cosine_similarity(res.features, gallery_feature);
                 top_matches.emplace(similarity, gallery_reid);
                 if (top_matches.size() > 3) {
                     top_matches.pop(); // Remove the lowest-ranked match
