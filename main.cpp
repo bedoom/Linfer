@@ -78,7 +78,7 @@ void test_yolo(){
 
 void test_track(){
 //    inference_bytetrack("yolov8n.trt", 0, yolo::Type::V8, "videos/palace.mp4");
-   precision_bytetrack_inference("imgs/c3", "yolov8n_result.txt", "yolov8n.trt", yolo::Type::V8);
+   precision_bytetrack_inference("imgs/c3", "yolov8m_result.txt", "yolov8m.trt", yolo::Type::V8);
     // infer_track(2, "Woman/img/%04d.jpg");
 }
 
@@ -106,7 +106,7 @@ void test_reid() {
 void test_yolov8() {
     int batch_size = 8;
     int flush_val = 200;
-    precision_batch_inference("imgs/c3", "yolov8n_result.txt", "yolov8n.trt", batch_size, flush_val);
+    precision_batch_inference("imgs/c3", "yolov8s_result.txt", "yolov8s.trt", batch_size, flush_val);
 }
 
 int main(){
@@ -119,6 +119,6 @@ int main(){
 //    test_ptq();
     // test_seg();
     // test_reid();
-    // test_yolov8();
+    test_yolov8();
     return 0;
 }
